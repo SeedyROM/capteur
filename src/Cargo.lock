@@ -503,6 +503,7 @@ dependencies = [
 name = "capteur"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "color-eyre",
  "futures",
  "lapin",

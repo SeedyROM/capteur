@@ -9,7 +9,10 @@
 
 use color_eyre::Report;
 
-use capteur::{setup_environment, transports::stream_to_amqp};
+use capteur::{
+    setup_environment,
+    transports::{Transport, AMQP},
+};
 use tracing::info;
 
 #[tokio::main]
@@ -19,7 +22,9 @@ async fn main() -> Result<(), Report> {
     info!("Client is spinning up...");
     info!("Let's emit some garbage!!!");
 
-    let _ = tokio::task::spawn(stream_to_amqp()).await?;
+    let mut transport = AMQP::new().await?;
+
+    let _ = tokio::task::spawn(async move { transport.stream().await }).await?;
 
     Ok(())
 }
