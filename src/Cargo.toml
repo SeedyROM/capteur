@@ -1,2 +1,2 @@
 [workspace]
-members = ["capteur-cli", "capteur-client/src-tauri"]
+members = ["capteur", "capteur-cli", "capteur-client/src-tauri"]
