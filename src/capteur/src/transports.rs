@@ -19,11 +19,11 @@ use tracing::{error, info};
 /// Trait to handle all transport layers.
 ///
 #[async_trait]
-pub trait Transport {
+pub trait Transport<T> {
     ///
     /// Create a new transport, just do AMQP for now.
     ///
-    async fn new() -> Result<AMQP, Report>;
+    async fn new() -> Result<T, Report>;
 
     ///
     /// Stream data into the transport.
@@ -39,11 +39,11 @@ pub struct AMQP {
 }
 
 #[async_trait]
-impl Transport for AMQP {
+impl Transport<Self> for AMQP {
     ///
     /// Create a new AMQP transport layer
     ///
-    async fn new() -> Result<AMQP, Report> {
+    async fn new() -> Result<Self, Report> {
         // Create the RabbitMQ connection
         let addr =
             std::env::var("AMQP_ADDR").unwrap_or_else(|_| "amqp://127.0.0.1:5672/%2f".into());
