@@ -10,6 +10,7 @@ use lapin::{
     types::FieldTable,
     BasicProperties, Connection, ConnectionProperties,
 };
+use rand::Rng;
 use tracing::{error, info};
 
 ///
@@ -32,13 +33,16 @@ pub async fn stream_to_amqp() -> Result<(), Report> {
 
     // Emit our fake messages
     loop {
+        // Mock random sensor data
+        let data: f64 = rand::thread_rng().gen();
+
         info!("Publishing data to RabbitMQ...");
         let result = channel
             .basic_publish(
                 "",
                 "fake-data",
                 BasicPublishOptions::default(),
-                b"123",
+                data.to_string().as_bytes(),
                 BasicProperties::default(),
             )
             .await;
