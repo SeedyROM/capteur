@@ -5,6 +5,7 @@
 use color_eyre::Report;
 use tracing_subscriber::EnvFilter;
 
+pub mod transports;
 
 /// 
 /// Setup tracing and error handling with [`tracing`], [`tracing_subscriber`] and [`color_eyre`].
@@ -27,11 +28,3 @@ pub fn setup_environment() -> Result<(), Report> {
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}

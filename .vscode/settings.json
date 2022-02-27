@@ -1,4 +1,5 @@
 {
   "rust-analyzer.procMacro.enable": true,
   "rust-analyzer.experimental.procAttrMacros": true,
+  "editor.formatOnSave": true,
 }
