@@ -19,7 +19,7 @@ use tokio::{
         Mutex,
     },
 };
-use tokio_tungstenite::{accept_async, tungstenite::Error};
+use tokio_tungstenite::{accept_async, tungstenite::Error, tungstenite::Message};
 use tracing::{error, info};
 
 ///
@@ -66,22 +66,21 @@ impl WebSocketPassthrough {
         info!("Start websocket stream...");
 
         // Create and wrap our inbound channel
-        let (_, rx) = unbounded_channel::<String>();
+        let (tx, rx) = unbounded_channel::<String>();
         let inbound = Arc::new(Mutex::new(rx));
 
         let consumer_stream = tokio::task::spawn(async move {
             info!("will consume");
             while let Some(delivery) = consumer.next().await {
                 let delivery = delivery.expect("error in consumer");
-                info!(
-                    "Received: {}",
-                    std::str::from_utf8(&delivery.data).expect("Failed to parse data") // TODO: This is weird...
-                );
+                let data = std::str::from_utf8(&delivery.data).expect("Failed to parse data");
+                info!("Received: {}", &data);
+                tx.send(data.to_string()).unwrap();
                 delivery.ack(BasicAckOptions::default()).await.expect("ack");
             }
         });
 
-        // Drop our lock and stream...
+        // Drop our channel lock and stream...
         drop(channel);
         tokio::select! {
             _ = consumer_stream => (),
@@ -109,7 +108,12 @@ impl WebSocketPassthrough {
                 .expect("connected streams should have a peer address");
             info!("Peer address: {}", peer);
 
-            tokio::spawn(Self::accept_connection(peer, stream, clients.clone()));
+            tokio::spawn(Self::accept_connection(
+                peer,
+                stream,
+                clients.clone(),
+                inbound.clone(),
+            ));
         }
     }
 
@@ -117,9 +121,10 @@ impl WebSocketPassthrough {
         peer: SocketAddr,
         stream: TcpStream,
         clients: Arc<Mutex<ClientMap>>,
+        inbound: Arc<Mutex<UnboundedReceiver<String>>>,
     ) {
         // Handle broken connections
-        match Self::handle_connection(peer, stream, clients).await {
+        match Self::handle_connection(peer, stream, clients, inbound).await {
             Err(e) => match e {
                 Error::ConnectionClosed | Error::Protocol(_) | Error::Utf8 => (),
                 err => error!("Error processing connection: {}", err),
@@ -132,6 +137,7 @@ impl WebSocketPassthrough {
         peer: SocketAddr,
         stream: TcpStream,
         clients: Arc<Mutex<ClientMap>>,
+        inbound: Arc<Mutex<UnboundedReceiver<String>>>,
     ) -> tungstenite::Result<()> {
         // Upgrade the TCP/HTTP connection to a WebSocket
         let mut ws_stream = accept_async(stream).await.expect("Failed to accept");
@@ -146,13 +152,17 @@ impl WebSocketPassthrough {
             connections.insert(peer.clone(), tx);
         }
 
-        // Echo... echo... echo...
-        while let Some(msg) = ws_stream.next().await {
-            let msg = msg?;
-            if msg.is_text() || msg.is_binary() {
-                ws_stream.send(msg).await?;
-            }
+        while let Some(msg) = inbound.lock().await.recv().await {
+            ws_stream.send(Message::from(msg)).await?;
         }
+
+        // // Echo... echo... echo...
+        // while let Some(msg) = ws_stream.next().await {
+        //     let msg = msg?;
+        //     if msg.is_text() || msg.is_binary() {
+        //         ws_stream.send(msg).await?;
+        //     }
+        // }
 
         // Remove the client from the ClientMap
         {
