@@ -68,19 +68,23 @@ impl Transport<Self> for AMQP {
     /// Dummy stream to push to RabbitMQ, **REMOVE ME**
     ///
     async fn stream(&mut self) -> Result<(), Report> {
-        let channel = self.channel.lock().await;
-
         // Create a test queue
-        let _ = channel
-            .queue_declare(
-                "fake-data",
-                QueueDeclareOptions::default(),
-                FieldTable::default(),
-            )
-            .await?;
+        {
+            let channel = self.channel.lock().await;
+
+            let _ = channel
+                .queue_declare(
+                    "fake-data",
+                    QueueDeclareOptions::default(),
+                    FieldTable::default(),
+                )
+                .await?;
+        }
 
         // Emit our fake messages
         loop {
+            let channel = self.channel.lock().await;
+
             // Mock random sensor data
             let data: f64 = rand::thread_rng().gen();
 
