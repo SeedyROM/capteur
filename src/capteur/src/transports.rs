@@ -20,6 +20,7 @@ use tracing::{error, info};
 ///
 pub enum TransportType {
     AMQP,
+    MQTT,
     Kafka,
     Redis,
 }
@@ -103,7 +104,7 @@ impl Transport<Self> for AMQP {
                 error!(?error)
             }
 
-            tokio::time::sleep(Duration::from_millis(500)).await
+            tokio::time::sleep(Duration::from_millis(200)).await
         }
     }
 }
