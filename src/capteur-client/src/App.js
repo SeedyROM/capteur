@@ -1,40 +1,25 @@
-import React from 'react'
-import logo from './logo.svg'
-import tauriCircles from './tauri.svg'
-import tauriWord from './wordmark.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import useWebSocket from "react-use-websocket";
+
+import "./App.css";
 
 function App() {
+  const [value, setValue] = useState(0);
+  const { lastMessage } = useWebSocket("ws://localhost:9002");
+
+  useEffect(() => {
+    if (lastMessage === null) return;
+    setValue(lastMessage.data);
+  }, [lastMessage]);
+
   return (
     <div className="App">
       <header className="App-header">
-        <div className="inline-logo">
-          <img src={tauriCircles} className="App-logo rotate" alt="logo" />
-          <img src={tauriWord} className="App-logo smaller" alt="logo" />
-        </div>
-        <a
-          className="App-link"
-          href="https://tauri.studio"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn Tauri
-        </a>
-        <img src={logo} className="App-logo rotate" alt="logo" />
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
+        <div>Fake sensor:</div>
+        <div>{value}</div>
       </header>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
