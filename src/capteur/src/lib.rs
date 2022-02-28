@@ -6,6 +6,7 @@ use color_eyre::Report;
 use tracing_subscriber::EnvFilter;
 
 pub mod transports;
+pub mod websockets;
 
 ///
 /// Setup tracing and error handling with [`tracing`], [`tracing_subscriber`] and [`color_eyre`].

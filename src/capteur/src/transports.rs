@@ -16,6 +16,15 @@ use tokio::sync::Mutex;
 use tracing::{error, info};
 
 ///
+/// Supported transports.
+///
+pub enum TransportType {
+    AMQP,
+    Kafka,
+    Redis,
+}
+
+///
 /// Trait to handle all transport layers.
 ///
 #[async_trait]
@@ -35,7 +44,7 @@ pub trait Transport<T> {
 /// Simple AMQP transport
 ///
 pub struct AMQP {
-    channel: Arc<Mutex<Channel>>,
+    pub channel: Arc<Mutex<Channel>>,
 }
 
 #[async_trait]
@@ -49,6 +58,7 @@ impl Transport<Self> for AMQP {
             std::env::var("AMQP_ADDR").unwrap_or_else(|_| "amqp://127.0.0.1:5672/%2f".into());
         let conn = Connection::connect(&addr, ConnectionProperties::default()).await?;
         let channel = conn.create_channel().await?;
+
         Ok(AMQP {
             channel: Arc::new(Mutex::new(channel)),
         })

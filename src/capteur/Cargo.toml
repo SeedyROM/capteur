@@ -16,3 +16,6 @@ tokio = { version = "1.17.0", features = ["full"] }
 tracing = "0.1.31"
 tracing-subscriber = { version = "0.3.9", features = ["fmt", "env-filter"] }
 async-trait = "0.1.52"
+tokio-tungstenite = "0.17.1"
+tungstenite = "0.17.2"
+futures-util = "0.3.21"
