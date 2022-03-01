@@ -136,7 +136,7 @@ impl WebSocketPassthrough {
             },
             _ => (),
         }
-        // Remove the peer since the connect is dead
+        // Remove the peer since the connection is dead
         let mut connections = clients.lock().await;
         connections.remove(&peer);
     }
