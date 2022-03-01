@@ -1,0 +1,23 @@
+nav {
+  @apply bg-black fixed w-screen;
+}
+
+.navbar {
+  @apply text-white container flex py-2 px-4 justify-between items-center leading-3 mx-auto;
+}
+
+.navbar__logo {
+  @apply cursor-pointer font-mono font-bold text-lg mt-1;
+}
+
+.navbar a {
+  @apply mr-8;
+}
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+.navbar__items a:last-child {
+  @apply mr-0;
+}

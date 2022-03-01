@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 
 import "./App.css";
+import NavBar from "./components/ui/NavBar";
 
 function App() {
   const [value, setValue] = useState(null);
@@ -29,6 +30,7 @@ function App() {
 
   return (
     <div className="App">
+      <NavBar />
       <header className="App-header">
         <div style={{ marginBottom: "2.5rem" }}>
           Status:
@@ -50,11 +52,17 @@ function App() {
                   {reading.measurement && (
                     <td>
                       {reading.measurement.value.toFixed(4)}
-                      <small>{reading.measurement.unit}</small>
+                      <em>
+                        <small>{reading.measurement.unit}</small>
+                      </em>
                     </td>
                   )}
                   {reading.boolean && (
-                    <td>{reading.boolean.value ? "On" : "Off"}</td>
+                    <td
+                      class={"boolean " + (reading.boolean.value ? "on" : "")}
+                    >
+                      {reading.boolean.value ? "On" : "Off"}
+                    </td>
                   )}
                 </tr>
               ))
