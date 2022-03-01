@@ -52,27 +52,3 @@ div.inline-logo .smaller {
     transform: rotate(360deg);
   }
 }
-
-table,
-th,
-td {
-  border: 1px solid white;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 0.5rem;
-}
-
-.boolean {
-  transition: all 0.15s ease;
-  font-weight: bold;
-  text-shadow: 1px 1px 0px #222;
-  background-color: tomato;
-  color: white;
-}
-
-.boolean.on {
-  background-color: springgreen;
-}

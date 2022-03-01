@@ -127,13 +127,18 @@ impl WebSocketPassthrough {
         inbound: Arc<Mutex<UnboundedReceiver<String>>>,
     ) {
         // Handle broken connections
-        match Self::handle_connection(peer, stream, clients, inbound).await {
+        match Self::handle_connection(peer, stream, clients.clone(), inbound).await {
             Err(e) => match e {
                 Error::ConnectionClosed | Error::Protocol(_) | Error::Utf8 => (),
-                err => error!("Error processing connection: {}", err),
+                err => {
+                    error!("Error processing connection: {}", err);
+                }
             },
             _ => (),
         }
+        // Remove the peer since the connect is dead
+        let mut connections = clients.lock().await;
+        connections.remove(&peer);
     }
 
     async fn handle_connection(
@@ -166,12 +171,6 @@ impl WebSocketPassthrough {
         //         ws_stream.send(msg).await?;
         //     }
         // }
-
-        // Remove the client from the ClientMap
-        {
-            let mut connections = clients.lock().await;
-            connections.remove(&peer);
-        }
 
         Ok(())
     }

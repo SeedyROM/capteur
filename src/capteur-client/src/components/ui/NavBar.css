@@ -14,7 +14,8 @@ nav {
   @apply mr-8;
 }
 
-.navbar a:hover {
+.navbar a:hover,
+.navbar a.active {
   text-decoration: underline;
 }
 

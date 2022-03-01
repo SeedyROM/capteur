@@ -4,4 +4,5 @@
 
 body {
   font-family: monospace;
+  min-height: 600px;
 }
