@@ -2,7 +2,7 @@
 //! Transport layers, only AMQP is currently supported
 //!
 
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::BTreeMap, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
 use color_eyre::Report;
@@ -92,12 +92,22 @@ impl Transport<Self> for AMQP {
             let channel = self.channel.lock().await;
 
             // Mock random sensor data
-            let mut sensors = HashMap::new();
+            let mut sensors = BTreeMap::new();
             sensors.insert(
-                "fakeSensor".to_string(),
+                "Barometer".to_string(),
                 SensorReading::Measurement {
                     value: rand::thread_rng().gen::<f64>() * 500f64,
                     unit: "Pa".to_string(),
+                },
+            );
+            sensors.insert(
+                "Valve 1".to_string(),
+                SensorReading::Boolean {
+                    value: if rand::thread_rng().gen::<f64>() > 0.5 {
+                        true
+                    } else {
+                        false
+                    },
                 },
             );
             let message = Message::Reading {
@@ -121,7 +131,7 @@ impl Transport<Self> for AMQP {
                 error!(?error)
             }
 
-            tokio::time::sleep(Duration::from_millis(1000)).await
+            tokio::time::sleep(Duration::from_millis(500)).await
         }
     }
 }

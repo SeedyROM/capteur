@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +7,7 @@ pub enum SensorReading {
     #[serde(rename = "measurement")]
     Measurement { value: f64, unit: String },
     #[serde(rename = "boolean")]
-    Boolean(bool),
+    Boolean { value: bool },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -15,6 +15,6 @@ pub enum Message {
     #[serde(rename = "reading")]
     Reading {
         timestamp: u128,
-        sensors: HashMap<String, SensorReading>,
+        sensors: BTreeMap<String, SensorReading>,
     },
 }

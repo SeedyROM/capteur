@@ -4,7 +4,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import "./App.css";
 
 function App() {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(null);
   const { lastMessage, readyState } = useWebSocket("ws://localhost:9002", {
     retryOnError: true,
     shouldReconnect: (_) => true,
@@ -14,7 +14,7 @@ function App() {
 
   useEffect(() => {
     if (lastMessage === null) return;
-    setValue(lastMessage.data);
+    setValue(JSON.parse(lastMessage.data));
   }, [lastMessage]);
 
   const connectionStatus = {
@@ -25,17 +25,41 @@ function App() {
     [ReadyState.UNINSTANTIATED]: "Borked",
   }[readyState];
 
+  console.log(value);
+
   return (
     <div className="App">
       <header className="App-header">
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: "2.5rem" }}>
           Status:
           <br />
-          {connectionStatus}
+          <b>{connectionStatus}</b>
         </div>
         <div style={{ opacity: readyState !== ReadyState.OPEN ? 0.5 : 1 }}>
-          <div>Fake sensor:</div>
-          <div>{JSON.stringify(value)}</div>
+          <table style={{ width: "80vw", tableLayout: "fixed" }}>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+            {value === null ? (
+              <div>No sensors to read...</div>
+            ) : (
+              Object.entries(value.reading.sensors).map(([name, reading]) => (
+                <tr>
+                  <td>{name}</td>
+                  {reading.measurement && (
+                    <td>
+                      {reading.measurement.value.toFixed(4)}
+                      <small>{reading.measurement.unit}</small>
+                    </td>
+                  )}
+                  {reading.boolean && (
+                    <td>{reading.boolean.value ? "On" : "Off"}</td>
+                  )}
+                </tr>
+              ))
+            )}
+          </table>
         </div>
       </header>
     </div>
