@@ -2,9 +2,9 @@
 
 ## What does it do?
 
-- [-] Take data from a data source (fake right now)
-- [-] Push into RabbitMQ
-- [-] Consume the queue and push messages to a websocket server
+- [x] Take data from a data source (fake right now)
+- [x] Push into RabbitMQ
+- [x] Consume the queue and push messages to a websocket server
 - [ ] Consume messages to the database
 
 ## **DEMO**: Here's it working!
