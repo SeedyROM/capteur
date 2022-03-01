@@ -1,29 +1,11 @@
-import React, { useState, useEffect } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
+import React from "react";
+import { ReadyState } from "react-use-websocket";
+import { useWSPassthrough } from "../contexts/WSPassthrough";
 
 import "./Readings.css";
 
 const Readings = () => {
-  const [value, setValue] = useState(null);
-  const { lastMessage, readyState } = useWebSocket("ws://localhost:9002", {
-    retryOnError: true,
-    shouldReconnect: (_) => true,
-    reconnectInterval: 750,
-    reconnectAttempts: Infinity,
-  });
-
-  useEffect(() => {
-    if (lastMessage === null) return;
-    setValue(JSON.parse(lastMessage.data));
-  }, [lastMessage]);
-
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: "Awaiting connection...",
-    [ReadyState.OPEN]: "Connected",
-    [ReadyState.CLOSING]: "Closing...",
-    [ReadyState.CLOSED]: "Awaiting connection...",
-    [ReadyState.UNINSTANTIATED]: "Borked",
-  }[readyState];
+  const { value, connectionStatus, readyState } = useWSPassthrough();
 
   return (
     <header className="App-header">

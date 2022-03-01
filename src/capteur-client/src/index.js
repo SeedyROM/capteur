@@ -4,11 +4,14 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
+import WSPassthrough from "./contexts/WSPassthrough";
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <WSPassthrough>
+        <App />
+      </WSPassthrough>
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")
