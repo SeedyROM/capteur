@@ -28,9 +28,14 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <div style={{ marginBottom: "1rem" }}>
+          Status:
+          <br />
+          {connectionStatus}
+        </div>
         <div style={{ opacity: readyState !== ReadyState.OPEN ? 0.5 : 1 }}>
-          <div>Fake sensor (Status: {connectionStatus}):</div>
-          <div>{value}</div>
+          <div>Fake sensor:</div>
+          <div>{JSON.stringify(value)}</div>
         </div>
       </header>
     </div>

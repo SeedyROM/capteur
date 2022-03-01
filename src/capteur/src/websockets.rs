@@ -72,7 +72,7 @@ impl WebSocketPassthrough {
         let consumer_stream = tokio::task::spawn(async move {
             info!("WebSocketPassthrough consumer started...");
             while let Some(delivery) = consumer.next().await {
-                let delivery = delivery.expect("error in consumer");
+                let delivery = delivery.expect("Error in consumer");
                 let data = std::str::from_utf8(&delivery.data).expect("Failed to parse data");
                 info!("Received: {}", &data);
                 tx.send(data.to_string()).unwrap();
@@ -108,7 +108,7 @@ impl WebSocketPassthrough {
         while let Ok((stream, _)) = listener.accept().await {
             let peer = stream
                 .peer_addr()
-                .expect("connected streams should have a peer address");
+                .expect("Connected streams should have a peer address");
             info!("Peer address: {}", peer);
 
             tokio::spawn(Self::accept_connection(

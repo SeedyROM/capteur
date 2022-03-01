@@ -2,7 +2,7 @@
 //! Transport layers, only AMQP is currently supported
 //!
 
-use std::{sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
 use color_eyre::Report;
@@ -14,6 +14,11 @@ use lapin::{
 use rand::Rng;
 use tokio::sync::Mutex;
 use tracing::{error, info};
+
+use crate::{
+    messages::{Message, SensorReading},
+    util::get_epoch_ms,
+};
 
 ///
 /// Supported transports.
@@ -87,15 +92,27 @@ impl Transport<Self> for AMQP {
             let channel = self.channel.lock().await;
 
             // Mock random sensor data
-            let data: f64 = rand::thread_rng().gen();
+            let mut sensors = HashMap::new();
+            sensors.insert(
+                "fakeSensor".to_string(),
+                SensorReading::Measurement {
+                    value: rand::thread_rng().gen::<f64>() * 500f64,
+                    unit: "Pa".to_string(),
+                },
+            );
+            let message = Message::Reading {
+                timestamp: get_epoch_ms(),
+                sensors,
+            };
 
+            // Publish to the the queue
             info!("Publishing data to RabbitMQ...");
             let result = channel
                 .basic_publish(
                     "",
                     "fake-data",
                     BasicPublishOptions::default(),
-                    data.to_string().as_bytes(),
+                    serde_json::to_string(&message).unwrap().as_bytes(),
                     BasicProperties::default(),
                 )
                 .await;
@@ -104,7 +121,7 @@ impl Transport<Self> for AMQP {
                 error!(?error)
             }
 
-            tokio::time::sleep(Duration::from_millis(200)).await
+            tokio::time::sleep(Duration::from_millis(1000)).await
         }
     }
 }
