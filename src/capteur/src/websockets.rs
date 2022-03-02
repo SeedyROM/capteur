@@ -90,11 +90,11 @@ impl WebSocketPassthrough {
         let inbound = Arc::new(Mutex::new(rx));
 
         let consumer_stream = tokio::task::spawn(async move {
-            info!("WebSocketPassthrough consumer started...");
+            info!("DatabaseBackfill consumer started...");
             while let Some(delivery) = consumer.next().await {
                 let delivery = delivery.expect("Error in consumer");
                 let data = std::str::from_utf8(&delivery.data).expect("Failed to parse data");
-                info!("Received: {}", &data);
+                info!("WS Received: {}", &data);
                 tx.send(data.to_string()).unwrap();
                 delivery
                     .ack(BasicAckOptions::default())
