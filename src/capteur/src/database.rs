@@ -49,11 +49,14 @@ impl Consumer for DatabaseConsumer {
         // Get our channel and lock it
         let channel = self.channel.lock().await;
 
-        // Create a queue to consume from
+        // Create a queue to consume from, this one is durable to handle downtime from the client
         let _ = channel
             .queue_declare(
                 "database-backfill",
-                QueueDeclareOptions::default(),
+                QueueDeclareOptions {
+                    durable: true,
+                    ..Default::default()
+                },
                 FieldTable::default(),
             )
             .await?;
@@ -82,11 +85,15 @@ impl Consumer for DatabaseConsumer {
         // Drop the lock and stream the incoming data
         drop(channel);
 
+        // Stream data into the database
         info!("DatabaseBackfill consumer started...");
         while let Some(delivery) = consumer.next().await {
             let delivery = delivery.expect("Error in consumer");
             let data = std::str::from_utf8(&delivery.data).expect("Failed to parse data");
             info!("DB Received: {}", &data);
+
+            // TODO: Insert into the DB
+
             delivery
                 .ack(BasicAckOptions::default())
                 .await
