@@ -8,11 +8,7 @@ use lapin::{
     types::FieldTable,
     Channel,
 };
-use mongodb::{
-    bson::{doc, to_bson, Document},
-    options::ClientOptions,
-    Client, Database,
-};
+use mongodb::{bson::doc, options::ClientOptions, Client};
 use tokio::sync::Mutex;
 use tracing::info;
 
@@ -89,7 +85,7 @@ impl Consumer for DatabaseConsumer {
             info!("DB Received: {}", &data);
 
             // TODO: Insert into the DB
-            let _ = database.insert_one(doc! { data: data }, None).await;
+            let _ = database.insert_one(doc! { data: data }, None).await?;
 
             delivery
                 .ack(BasicAckOptions::default())
