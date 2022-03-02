@@ -8,7 +8,11 @@ use lapin::{
     types::FieldTable,
     Channel,
 };
-use mongodb::{options::ClientOptions, Client, Database};
+use mongodb::{
+    bson::{doc, to_bson, Document},
+    options::ClientOptions,
+    Client, Database,
+};
 use tokio::sync::Mutex;
 use tracing::info;
 
@@ -16,17 +20,11 @@ use crate::util::Consumer;
 
 pub struct DatabaseConsumer {
     channel: Arc<Mutex<Channel>>,
-    client: Option<Arc<Mutex<Client>>>,
-    database: Option<Arc<Mutex<Database>>>,
 }
 
 impl DatabaseConsumer {
     pub fn from_channel(channel: Arc<Mutex<Channel>>) -> Self {
-        DatabaseConsumer {
-            channel,
-            client: None,
-            database: None,
-        }
+        DatabaseConsumer { channel }
     }
 }
 
@@ -42,9 +40,7 @@ impl Consumer for DatabaseConsumer {
 
         // Initialize the client and db connection
         let client = Client::with_options(client_options)?;
-        let database = client.database("fake-data-backup");
-        self.client = Some(Arc::new(Mutex::new(client)));
-        self.database = Some(Arc::new(Mutex::new(database)));
+        let database = client.database("fake-data-backup").collection("data");
 
         // Get our channel and lock it
         let channel = self.channel.lock().await;
@@ -93,6 +89,7 @@ impl Consumer for DatabaseConsumer {
             info!("DB Received: {}", &data);
 
             // TODO: Insert into the DB
+            let _ = database.insert_one(doc! { data: data }, None).await;
 
             delivery
                 .ack(BasicAckOptions::default())
