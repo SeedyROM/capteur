@@ -1,3 +1,7 @@
+//!
+//! Application wide utilities.
+//!
+
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn get_epoch_ms() -> u128 {
