@@ -7,7 +7,7 @@ use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use color_eyre::Report;
 use futures_util::{SinkExt, StreamExt};
 use lapin::{
-    options::{BasicAckOptions, BasicConsumeOptions},
+    options::{BasicAckOptions, BasicConsumeOptions, QueueBindOptions, QueueDeclareOptions},
     types::FieldTable,
     Channel,
 };
@@ -53,10 +53,30 @@ impl WebSocketPassthrough {
         // Get our channel and lock it
         let channel = self.channel.lock().await;
 
+        // Create a queue to consume from
+        let _ = channel
+            .queue_declare(
+                "websocket-passthrough",
+                QueueDeclareOptions::default(),
+                FieldTable::default(),
+            )
+            .await?;
+
+        // Bind the exchange to our queue
+        let _ = channel
+            .queue_bind(
+                "websocket-passthrough",
+                "fake-data",
+                "",
+                QueueBindOptions::default(),
+                FieldTable::default(),
+            )
+            .await?;
+
         // Create a simple consumer
         let mut consumer = channel
             .basic_consume(
-                "fake-data",
+                "websocket-passthrough",
                 "websocket_passthrough",
                 BasicConsumeOptions::default(),
                 FieldTable::default(),

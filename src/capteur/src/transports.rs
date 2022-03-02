@@ -7,9 +7,9 @@ use std::{collections::BTreeMap, sync::Arc, time::Duration};
 use async_trait::async_trait;
 use color_eyre::Report;
 use lapin::{
-    options::{BasicPublishOptions, QueueDeclareOptions},
+    options::{BasicPublishOptions, ExchangeDeclareOptions},
     types::FieldTable,
-    BasicProperties, Channel, Connection, ConnectionProperties,
+    BasicProperties, Channel, Connection, ConnectionProperties, ExchangeKind,
 };
 use rand::Rng;
 use tokio::sync::Mutex;
@@ -78,10 +78,11 @@ impl Transport<Self> for AMQP {
         {
             let channel = self.channel.lock().await;
 
-            let _ = channel
-                .queue_declare(
+            channel
+                .exchange_declare(
                     "fake-data",
-                    QueueDeclareOptions::default(),
+                    ExchangeKind::Fanout,
+                    ExchangeDeclareOptions::default(),
                     FieldTable::default(),
                 )
                 .await?;
@@ -119,8 +120,8 @@ impl Transport<Self> for AMQP {
             info!("Publishing data to RabbitMQ...");
             let result = channel
                 .basic_publish(
-                    "",
                     "fake-data",
+                    "",
                     BasicPublishOptions::default(),
                     serde_json::to_string(&message).unwrap().as_bytes(),
                     BasicProperties::default(),
