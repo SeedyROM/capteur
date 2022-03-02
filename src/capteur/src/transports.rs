@@ -114,7 +114,7 @@ impl Transport for AMQP {
             };
 
             // Publish to the the queue
-            info!("Publishing data to RabbitMQ...");
+            info!("Publishing data to RabbitMQ");
             let result = channel
                 .basic_publish(
                     "fake-data",
@@ -129,7 +129,7 @@ impl Transport for AMQP {
                 error!(?error)
             }
 
-            tokio::time::sleep(Duration::from_millis(500)).await
+            tokio::time::sleep(Duration::from_millis(350)).await
         }
     }
 }

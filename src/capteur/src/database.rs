@@ -1,3 +1,7 @@
+//!
+//! Database [`Consumer`] stream.
+//!
+
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -9,11 +13,14 @@ use lapin::{
     Channel,
 };
 use mongodb::{bson::doc, options::ClientOptions, Client};
-use tokio::sync::Mutex;
+use tokio::sync::{mpsc, Mutex};
 use tracing::info;
 
 use crate::util::Consumer;
 
+///
+/// Consume data from AMQP and insert into MongoDB with backpressure.
+///
 pub struct DatabaseConsumer {
     channel: Arc<Mutex<Channel>>,
 }
@@ -77,20 +84,42 @@ impl Consumer for DatabaseConsumer {
         // Drop the lock and stream the incoming data
         drop(channel);
 
-        // Stream data into the database
-        info!("DatabaseBackfill consumer started...");
-        while let Some(delivery) = consumer.next().await {
-            let delivery = delivery.expect("Error in consumer");
-            let data = std::str::from_utf8(&delivery.data).expect("Failed to parse data");
-            info!("DB Received: {}", &data);
+        // Use a bounded channel for backpressure, 256 is the max for now
+        let (consumer_tx, mut consumer_rx) = mpsc::channel::<String>(256);
 
-            // TODO: Insert into the DB
-            let _ = database.insert_one(doc! { data: data }, None).await?;
+        let consumer_stream = tokio::task::spawn(async move {
+            // Stream data into the database
+            info!("DatabaseBackfill consumer started");
+            while let Some(delivery) = consumer.next().await {
+                let delivery = delivery.expect("Error in consumer");
+                let data = std::str::from_utf8(&delivery.data).expect("Failed to parse data");
 
-            delivery
-                .ack(BasicAckOptions::default())
-                .await
-                .expect("Couldn't ACK received message");
+                info!("DB Received: {}", &data);
+                consumer_tx
+                    .send(data.to_string())
+                    .await
+                    .expect("Failed stream consumer message to database");
+
+                delivery
+                    .ack(BasicAckOptions::default())
+                    .await
+                    .expect("Couldn't ACK received message");
+            }
+        });
+
+        let database_stream = tokio::task::spawn(async move {
+            while let Some(message) = consumer_rx.recv().await {
+                let data = message.as_str();
+                let _ = database
+                    .insert_one(doc! { data: data }, None)
+                    .await
+                    .expect("Failed to insert into the database");
+            }
+        });
+
+        tokio::select! {
+            _ = consumer_stream => (),
+            _ = database_stream => (),
         }
 
         Ok(())
