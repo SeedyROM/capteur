@@ -83,14 +83,14 @@ impl WebSocketPassthrough {
             )
             .await?;
 
-        info!("Start websocket stream...");
+        info!("Start websocket stream");
 
         // Create and wrap our inbound channel
         let (tx, rx) = unbounded_channel::<String>();
         let inbound = Arc::new(Mutex::new(rx));
 
         let consumer_stream = tokio::task::spawn(async move {
-            info!("DatabaseBackfill consumer started...");
+            info!("DatabaseBackfill consumer started");
             while let Some(delivery) = consumer.next().await {
                 let delivery = delivery.expect("Error in consumer");
                 let data = std::str::from_utf8(&delivery.data).expect("Failed to parse data");

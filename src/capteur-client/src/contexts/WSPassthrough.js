@@ -22,7 +22,7 @@ const WSPassthrough = (props) => {
     [ReadyState.OPEN]: "Connected",
     [ReadyState.CLOSING]: "Closing...",
     [ReadyState.CLOSED]: "Awaiting connection...",
-    [ReadyState.UNINSTANTIATED]: "Borked",
+    [ReadyState.UNINSTANTIATED]: "Borked!",
   }[readyState];
 
   const contextValue = useMemo(
