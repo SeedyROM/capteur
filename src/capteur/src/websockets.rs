@@ -77,7 +77,7 @@ impl WebSocketPassthrough {
         let mut consumer = channel
             .basic_consume(
                 "websocket-passthrough",
-                "websocket_passthrough",
+                "websocket-passthrough-consumer",
                 BasicConsumeOptions::default(),
                 FieldTable::default(),
             )
