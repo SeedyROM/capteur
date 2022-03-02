@@ -5,6 +5,7 @@
 use color_eyre::Report;
 use tracing_subscriber::EnvFilter;
 
+pub mod database;
 pub mod messages;
 pub mod transports;
 pub mod util;
