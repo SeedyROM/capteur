@@ -34,12 +34,7 @@ pub enum TransportType {
 /// Trait to handle all transport layers.
 ///
 #[async_trait]
-pub trait Transport<T> {
-    ///
-    /// Create a new transport, just do AMQP for now.
-    ///
-    async fn new() -> Result<T, Report>;
-
+pub trait Transport {
     ///
     /// Stream data into the transport.
     ///
@@ -53,12 +48,11 @@ pub struct AMQP {
     pub channel: Arc<Mutex<Channel>>,
 }
 
-#[async_trait]
-impl Transport<Self> for AMQP {
+impl AMQP {
     ///
     /// Create a new AMQP transport layer
     ///
-    async fn new() -> Result<Self, Report> {
+    pub async fn new() -> Result<Self, Report> {
         // Create the RabbitMQ connection
         let addr =
             std::env::var("AMQP_ADDR").unwrap_or_else(|_| "amqp://127.0.0.1:5672/%2f".into());
@@ -69,7 +63,10 @@ impl Transport<Self> for AMQP {
             channel: Arc::new(Mutex::new(channel)),
         })
     }
+}
 
+#[async_trait]
+impl Transport for AMQP {
     ///
     /// Dummy stream to push to RabbitMQ, **REMOVE ME**
     ///
