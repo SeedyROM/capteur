@@ -66,7 +66,7 @@ impl WebSocketPassthrough {
         let _ = channel
             .queue_bind(
                 "websocket-passthrough",
-                "fake-data",
+                "capteur.fanout",
                 "",
                 QueueBindOptions::default(),
                 FieldTable::default(),

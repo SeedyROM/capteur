@@ -77,7 +77,7 @@ impl Transport for AMQP {
 
             channel
                 .exchange_declare(
-                    "fake-data",
+                    "capteur.fanout",
                     ExchangeKind::Fanout,
                     ExchangeDeclareOptions::default(),
                     FieldTable::default(),
@@ -117,7 +117,7 @@ impl Transport for AMQP {
             info!("Publishing data to RabbitMQ");
             let result = channel
                 .basic_publish(
-                    "fake-data",
+                    "capteur.fanout",
                     "",
                     BasicPublishOptions::default(),
                     serde_json::to_string(&message).unwrap().as_bytes(),
@@ -129,7 +129,7 @@ impl Transport for AMQP {
                 error!(?error)
             }
 
-            tokio::time::sleep(Duration::from_millis(350)).await
+            tokio::time::sleep(Duration::from_millis(400)).await
         }
     }
 }

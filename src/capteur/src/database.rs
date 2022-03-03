@@ -33,6 +33,9 @@ impl DatabaseConsumer {
 
 #[async_trait]
 impl Consumer for DatabaseConsumer {
+    ///
+    /// Stream database from a consumer into the database.
+    ///
     async fn stream(&mut self) -> Result<(), Report> {
         // Configure the the mongodb connection
         let addr =
@@ -64,7 +67,7 @@ impl Consumer for DatabaseConsumer {
         let _ = channel
             .queue_bind(
                 "database-backfill",
-                "fake-data",
+                "capteur.fanout",
                 "",
                 QueueBindOptions::default(),
                 FieldTable::default(),

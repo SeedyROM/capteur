@@ -23,15 +23,18 @@ async fn main() -> Result<(), Report> {
 
     info!("Starting capteur-cli");
 
+    // Create our processes
     let mut transport = AMQP::new().await?;
     let mut ws_passthrough = WebSocketPassthrough::from_channel(transport.channel.clone());
     let mut database_consumer = DatabaseConsumer::from_channel(transport.channel.clone());
 
+    // Spawn the tasks
     let amqp_transport = tokio::task::spawn(async move { transport.stream().await });
     let amqp_passthrough = tokio::task::spawn(async move { ws_passthrough.stream().await });
     let amqp_database_consumer =
         tokio::task::spawn(async move { database_consumer.stream().await });
 
+    // Wait for one task to die...
     tokio::select! {
         _ = amqp_transport => (),
         _ = amqp_passthrough => (),
